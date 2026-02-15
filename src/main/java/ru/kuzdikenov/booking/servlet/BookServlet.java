@@ -1,5 +1,6 @@
 package ru.kuzdikenov.booking.servlet;
 
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -7,6 +8,7 @@ import ru.kuzdikenov.booking.dao.BookingDao;
 import ru.kuzdikenov.booking.model.Booking;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 
@@ -23,17 +25,27 @@ public class BookServlet extends HttpServlet {
             String toStr = req.getParameter("to");
 
             if (placeIdStr == null || userIdStr == null || fromStr == null || toStr == null) {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing parameters");
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
 
-            int placeId = Integer.parseInt(placeIdStr);
-            int userId = Integer.parseInt(userIdStr);
-            Instant from = Instant.parse(fromStr);
-            Instant to = Instant.parse(toStr);
+            int placeId;
+            int userId;
+            Instant from;
+            Instant to;
+
+            try {
+                placeId = Integer.parseInt(placeIdStr);
+                userId = Integer.parseInt(userIdStr);
+                from = Instant.parse(fromStr);
+                to = Instant.parse(toStr);
+            } catch (NumberFormatException | DateTimeParseException e) {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
 
             if (!from.isBefore(to)) {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid time interval");
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 return;
             }
 
@@ -45,11 +57,12 @@ public class BookServlet extends HttpServlet {
             dao.create(new Booking(userId, placeId, from, to));
             resp.setStatus(HttpServletResponse.SC_OK);
 
-        } catch (NumberFormatException | DateTimeParseException e) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid format");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
             e.printStackTrace();
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 }
