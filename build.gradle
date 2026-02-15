@@ -1,7 +1,6 @@
 plugins {
     id 'java'
     id 'application'
-    // УБЕРИТЕ foojay отсюда
 }
 
 group = 'ru.kuzdikenov'
@@ -25,12 +24,12 @@ application {
     mainClass = 'ru.kuzdikenov.booking.Main'
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-}
-
 tasks.named('run') {
     standardInput = System.in
+}
+
+tasks.named('jar') {
+    manifest {
+        attributes 'Main-Class': 'ru.kuzdikenov.booking.Main'
+    }
 }
