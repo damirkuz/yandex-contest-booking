@@ -5,6 +5,6 @@
   * gradle 8, jdk 21
 - Далее из корня репозитория будет вызван скрипт:
 ```
-gradle build
-gradle run --args='--port 8080'
+gradle build --no-daemon
+gradle run --no-daemon --args='--port 8080'
 ```
